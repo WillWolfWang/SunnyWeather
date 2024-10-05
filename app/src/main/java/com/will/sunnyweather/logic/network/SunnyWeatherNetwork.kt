@@ -15,7 +15,7 @@ object SunnyWeatherNetwork {
 
     // 这里执行 retrofit 的请求方法调用
     // 获取 PlaceService
-    var placeService = ServiceCreator.createApiService(PlaceService::class.java)
+    private var placeService = ServiceCreator.createApiService(PlaceService::class.java)
 
     // 通过使用扩展函数，可以直接得到结果
     suspend fun searchPlace(city: String): PlaceResponse{
