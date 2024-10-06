@@ -14,9 +14,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.will.sunnyweather.R
+import com.will.sunnyweather.WeatherActivity
 
 class PlaceFragment: Fragment() {
-    private val viewModel: PlaceViewModel by lazy {
+    val viewModel: PlaceViewModel by lazy {
         ViewModelProvider(this).get(PlaceViewModel::class.java)
     }
 
@@ -31,7 +32,14 @@ class PlaceFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        placeAdapter = PlaceAdapter(requireContext(), viewModel.placeList)
+        if (viewModel.isSavePlace()) {
+            val place = viewModel.getPlace()
+            WeatherActivity.startWeatherActivity(requireContext(), place.location.lat, place.location.lng, place.name)
+            activity?.finish()
+            return
+        }
+
+        placeAdapter = PlaceAdapter(this, viewModel.placeList)
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycleView).apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -54,7 +62,7 @@ class PlaceFragment: Fragment() {
             }
         }
 
-        viewModel.placeLiveData.observe(this, Observer {result->
+        viewModel.placeLiveData.observe(viewLifecycleOwner, Observer {result->
             val places = result.getOrNull()
             if (places != null) {
                 recyclerView.visibility = View.VISIBLE

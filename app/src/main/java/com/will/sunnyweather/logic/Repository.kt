@@ -2,6 +2,7 @@ package com.will.sunnyweather.logic
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
+import com.will.sunnyweather.logic.dao.PlaceDao
 import com.will.sunnyweather.logic.model.DailyResponse
 import com.will.sunnyweather.logic.model.Place
 import com.will.sunnyweather.logic.model.PlaceResponse
@@ -17,6 +18,20 @@ import kotlin.coroutines.CoroutineContext
  * 仓库层
  */
 object Repository {
+
+    fun savePlace(place: Place) {
+        PlaceDao.savePlace(place)
+    }
+
+    fun getPlace(): Place {
+        return PlaceDao.getPlace()
+    }
+
+    fun isSavePlace(): Boolean {
+        return PlaceDao.isPlaceSave()
+    }
+
+
     fun searchPlace(city: String): LiveData<Result<List<Place>>> {
         // 使用 liveData 方法对网络请求结果封装为一个 liveData
 //        val liveData = liveData<Result<List<Place>>>(Dispatchers.IO) {

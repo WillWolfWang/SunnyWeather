@@ -24,4 +24,17 @@ class PlaceViewModel: ViewModel() {
     fun searchPlace(city: String) {
         searchLiveData.value = city
     }
+
+    // 保存城市
+    fun savePlace(place: Place) {
+        Repository.savePlace(place)
+    }
+
+    fun getPlace(): Place {
+        return Repository.getPlace()
+    }
+
+    fun isSavePlace(): Boolean {
+        return Repository.isSavePlace()
+    }
 }

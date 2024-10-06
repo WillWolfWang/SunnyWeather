@@ -11,7 +11,7 @@ import com.will.sunnyweather.WeatherActivity
 import com.will.sunnyweather.logic.model.Place
 
 // 城市适配器
-class PlaceAdapter(val context: Context, val places: List<Place>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class PlaceAdapter(val placeFragment: PlaceFragment, val places: List<Place>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         var view = LayoutInflater.from(parent.context).inflate(R.layout.place_item, parent, false)
         return PlaceViewHolder(view)
@@ -42,7 +42,8 @@ class PlaceAdapter(val context: Context, val places: List<Place>): RecyclerView.
 
         override fun onClick(v: View?) {
 
-            WeatherActivity.startWeatherActivity(context, place.location.lat, place.location.lng, place.name)
+            placeFragment.viewModel.savePlace(place)
+            WeatherActivity.startWeatherActivity(placeFragment.requireContext(), place.location.lat, place.location.lng, place.name)
         }
     }
 }
