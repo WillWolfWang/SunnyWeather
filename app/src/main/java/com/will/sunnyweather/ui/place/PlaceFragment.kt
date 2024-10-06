@@ -31,7 +31,7 @@ class PlaceFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        placeAdapter = PlaceAdapter(viewModel.placeList)
+        placeAdapter = PlaceAdapter(requireContext(), viewModel.placeList)
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycleView).apply {
             layoutManager = LinearLayoutManager(requireContext())
