@@ -11,17 +11,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.core.view.OnApplyWindowInsetsListener
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updateLayoutParams
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.will.sunnyweather.databinding.ActivityWeatherBinding
@@ -48,11 +51,11 @@ class WeatherActivity: AppCompatActivity() {
         }
     }
 
-    private val viewModel: WeatherViewModel by lazy {
+    val viewModel: WeatherViewModel by lazy {
         ViewModelProvider(this).get(WeatherViewModel::class.java)
     }
 
-    private lateinit var viewBinding: ActivityWeatherBinding
+    lateinit var viewBinding: ActivityWeatherBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -128,10 +131,34 @@ class WeatherActivity: AppCompatActivity() {
             refreshWeather()
         }
 
+        viewBinding.layoutNow.navBtn.setOnClickListener {
+            viewBinding.drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        viewBinding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener{
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+
+            }
+
+            override fun onDrawerOpened(drawerView: View) {
+
+            }
+
+            override fun onDrawerClosed(drawerView: View) {
+                val manager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                manager.hideSoftInputFromWindow(drawerView.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+            }
+
+            override fun onDrawerStateChanged(newState: Int) {
+
+            }
+
+        })
+
         refreshWeather()
     }
 
-    private fun refreshWeather() {
+    fun refreshWeather() {
         viewModel.searchWeather(viewModel.locationLat, viewModel.locationLng)
         viewBinding.swipeRefresh.isRefreshing = true
     }

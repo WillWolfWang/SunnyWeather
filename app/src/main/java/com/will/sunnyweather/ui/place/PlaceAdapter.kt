@@ -41,9 +41,17 @@ class PlaceAdapter(val placeFragment: PlaceFragment, val places: List<Place>): R
         }
 
         override fun onClick(v: View?) {
-
-            placeFragment.viewModel.savePlace(place)
-            WeatherActivity.startWeatherActivity(placeFragment.requireContext(), place.location.lat, place.location.lng, place.name)
+            val activity = placeFragment.activity
+            if (activity is WeatherActivity) {
+                activity.viewBinding.drawerLayout.closeDrawers()
+                activity.viewModel.locationLng = place.location.lng
+                activity.viewModel.locationLat = place.location.lat
+                activity.viewModel.placeName = place.name
+                activity.refreshWeather()
+            } else {
+                placeFragment.viewModel.savePlace(place)
+                WeatherActivity.startWeatherActivity(placeFragment.requireContext(), place.location.lat, place.location.lng, place.name)
+            }
         }
     }
 }

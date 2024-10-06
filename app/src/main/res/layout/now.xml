@@ -16,6 +16,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <Button
+            android:id="@+id/navBtn"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="15dp"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/ic_home"/>
+
         <TextView
             android:id="@+id/placeName"
             android:layout_width="wrap_content"
@@ -23,6 +31,7 @@
             android:layout_marginStart="60dp"
             android:layout_marginEnd="60dp"
             android:layout_gravity="center"
+            tools:text="placeName"
             android:maxLines="1"
             android:ellipsize="middle"
             android:textColor="@color/white"
