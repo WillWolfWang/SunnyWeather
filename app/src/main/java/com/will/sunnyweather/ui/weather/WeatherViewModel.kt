@@ -1,4 +1,4 @@
-package com.will.sunnyweather.ui.place
+package com.will.sunnyweather.ui.weather
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
