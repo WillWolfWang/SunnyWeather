@@ -119,9 +119,21 @@ class WeatherActivity: AppCompatActivity() {
                 Toast.makeText(this, "无法获取天气", Toast.LENGTH_SHORT).show()
                 result.exceptionOrNull()?.printStackTrace()
             }
+            viewBinding.swipeRefresh.isRefreshing = false
         })
 
+        viewBinding.swipeRefresh.setColorSchemeResources(R.color.colorPrimary)
+        viewBinding.swipeRefresh.setOnRefreshListener {
+            // 刷新天气
+            refreshWeather()
+        }
+
+        refreshWeather()
+    }
+
+    private fun refreshWeather() {
         viewModel.searchWeather(viewModel.locationLat, viewModel.locationLng)
+        viewBinding.swipeRefresh.isRefreshing = true
     }
 
     private fun showWeather(weather: Weather) {
