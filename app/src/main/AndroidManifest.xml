@@ -20,14 +20,21 @@
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.SunnyWeather">
+
+        </activity>
+
+        <activity android:name=".WeatherActivity"/>
+        <activity android:name="com.will.sunnyweather.test.TestActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+
+            android:theme="@style/MyFullScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".WeatherActivity"/>
     </application>
 
 </manifest>
