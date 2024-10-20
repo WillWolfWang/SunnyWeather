@@ -2,6 +2,7 @@ package com.will.sunnyweather.test;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.os.Bundle;
@@ -9,18 +10,32 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsetsController;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.will.sunnyweather.R;
 import com.will.sunnyweather.test.CircleDrawable;
+import com.will.sunnyweather.utils.MyUtils;
 import com.will.sunnyweather.utils.Utils;
+import com.will.sunnyweather.weight.BiggerView;
+import com.will.sunnyweather.weight.BiggerView2;
+import com.will.sunnyweather.weight.FitImageView;
 
 import java.io.File;
 import java.io.IOException;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.graphics.Insets;
+import androidx.core.view.OnApplyWindowInsetsListener;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
+import kotlin.Pair;
 
 public class TestActivity extends AppCompatActivity {
     private ImageView iv,
@@ -28,9 +43,15 @@ public class TestActivity extends AppCompatActivity {
             ivPosition,
             // 放大镜的 imageView
            ivMagnifier;
-    private int bmWidth, bmHeight;
+
+    private BiggerView biggerView;
+    private Float bmWidth;
+    private Float bmHeight;
     private int ivWidth, ivHeight;
     private FrameLayout fl;
+    private ConstraintLayout cl;
+
+    private BiggerView2 biggerView2;
 
     // 触摸点的坐标
     private float mX, mY;
@@ -43,9 +64,53 @@ public class TestActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
         fl = findViewById(R.id.fl);
+        cl = findViewById(R.id.cl);
         iv = findViewById(R.id.imageView);
+        biggerView = findViewById(R.id.biggerView);
+
+        biggerView2 = findViewById(R.id.biggerView2);
+
         ivPosition = findViewById(R.id.iv_location);
         ivMagnifier = findViewById(R.id.iv_magnifier);
+
+        findViewById(R.id.btn_hide).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                WindowInsetsControllerCompat controllerCompat = new WindowInsetsControllerCompat(getWindow(), fl);
+                controllerCompat.hide(WindowInsetsCompat.Type.systemBars());
+                controllerCompat.setSystemBarsBehavior( WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+
+            }
+        });
+
+        findViewById(R.id.btn_show).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                WindowInsetsControllerCompat controllerCompat = new WindowInsetsControllerCompat(getWindow(), fl);
+                controllerCompat.show(WindowInsetsCompat.Type.systemBars());
+//                controllerCompat.setSystemBarsBehavior( WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+
+            }
+        });
+
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        getWindow().setNavigationBarColor(Color.TRANSPARENT);
+
+        ViewCompat.setOnApplyWindowInsetsListener(cl, new OnApplyWindowInsetsListener() {
+            @NonNull
+            @Override
+            public WindowInsetsCompat onApplyWindowInsets(@NonNull View v, @NonNull WindowInsetsCompat insets) {
+                Insets statusInsets  = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                Insets navigationInsets =  insets.getInsets(WindowInsetsCompat.Type.navigationBars());
+
+                Log.e("WillWolf", "statusInsets-->" + statusInsets.toString());
+                Log.e("WillWolf", "navigationInsets-->" + navigationInsets);
+                cl.setPadding(0, statusInsets.top, 0, navigationInsets.bottom);
+                return insets;
+            }
+        });
+
 
         matrix = new Matrix();
         matrix.postScale(scaleX, scaleY);
@@ -58,17 +123,19 @@ public class TestActivity extends AppCompatActivity {
             @Override
             public void run() {
                 // iv 的最大尺寸
-                int maxWidth = fl.getWidth();
-                int maxHeight = fl.getHeight();
+                int maxWidth = biggerView2.getWidth();
+                int maxHeight = biggerView2.getHeight();
                 Log.e("WillWolf", "width-->" + maxWidth);
                 Log.e("WillWolf", "height-->" + maxHeight);
 
-                bm = getImage();
-                bmWidth = bm.getWidth();
-                bmHeight = bm.getHeight();
-                Log.e("WillWolf", "bm-->" + bm.getWidth() + ", " + bm.getHeight());
+                File file = new File(getExternalFilesDir("").getPath() + "/" + "MyPic", "Test.jpg");
+                Pair<Float, Float> pair = MyUtils.INSTANCE.getBitmapSize(file.getPath());
+
+                bmWidth = pair.getSecond();
+                bmHeight = pair.getFirst();
+                Log.e("WillWolf", "bm-->" + bmWidth + ", " + bmHeight);
                 // 调整 imageView 的宽高尺寸
-                float radio = bm.getWidth() * 1.0f / bm.getHeight();
+                float radio = bmWidth * 1.0f / bmHeight;
 
                 int viewWidth = maxWidth;
                 int viewHeight = (int) (viewWidth / radio);
@@ -83,13 +150,29 @@ public class TestActivity extends AppCompatActivity {
                 ivHeight = viewHeight;
 
                 // 设置 imageView 的宽高
-                ViewGroup.LayoutParams lp = fl.getLayoutParams();
+                ViewGroup.LayoutParams lp = biggerView2.getLayoutParams();
                 lp.width = viewWidth;
                 lp.height = viewHeight;
-                fl.setLayoutParams(lp);
+                biggerView2.setLayoutParams(lp);
 
+                bm = getImage(viewWidth, viewHeight);
 
                 iv.setImageBitmap(bm);
+                biggerView.setBitmapSrc(bm);
+                biggerView.setCallback(new BiggerView.Callback() {
+                    @Override
+                    public void onActionUp(float x, float y) {
+                        float bmX = x / ivWidth * bmWidth;
+                        float bmY = y / ivHeight * bmHeight;
+                        Log.e("WillWolf", "onActionUp-->" + x + ", " + y + "," + ivWidth + ", " + ivHeight + ", "
+                         + bmWidth + ", " + bmHeight);
+                        Log.e("WillWolf", "bmX-->" + bmX + ", " + bmY);
+                        ivPosition.setX(x - Utils.dp2px(TestActivity.this, 25));
+                        ivPosition.setY(y - Utils.dp2px(TestActivity.this, 50));
+                    }
+                });
+
+                biggerView2.setBitmapSrc(bm);
             }
         });
 
@@ -205,9 +288,10 @@ public class TestActivity extends AppCompatActivity {
     }
 
 
-    private Bitmap getImage() {
+    private Bitmap getImage(int width, int height) {
         File file = new File(getExternalFilesDir("").getPath() + "/" + "MyPic", "Test.jpg");
-        Bitmap bm = BitmapFactory.decodeFile(file.getPath());
+//        Bitmap bm = BitmapFactory.decodeFile(file.getPath());
+        Bitmap bm = MyUtils.INSTANCE.getScaledBitmap(file.getPath(), width, height);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
             try {
                 ExifInterface exifInterface = new ExifInterface(file);
