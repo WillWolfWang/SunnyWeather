@@ -56,6 +56,8 @@ public class BiggerView2 extends View {
       mPaint.setStrokeWidth(mBvOutlineWidth * 2);
 
       mPath = new Path();
+
+
    }
 
    @Override
@@ -92,10 +94,26 @@ public class BiggerView2 extends View {
    private float mCurY;//当前触点Y
    private boolean isDown;//是否触摸
 
+
+   float oldDistance = 0f;// 刚按下时双指之间的距离
+   float newDistance = 0f;// 在屏幕上滑动后双指之间的距离
+   float scalePoint = 0f; // 缩放中心点
+   float scale = 1f; // 缩放比
+   float translationX = 0f;// x 轴移动量
+   float translationY = 0f;// y 轴移动量
+   float oldCenterX = 0f;// 刚按下时双指之间的 x 坐标
+   float oldCenterY = 0f;// 刚按下时双指之间的 y 坐标
+   float newCenterX = 0f;// 屏幕上滑动后双指之间的点的 x 坐标
+   float newCenterY = 0f;// 屏幕上滑动后双指之间的点的 y 坐标
+
+   private int count = 0;//点击次数
+   private long firstClick = 0;//第一次点击时间
+   private long secondClick = 0;//第二次点击时间
+   private final int totalTime = 2000;
    @Override
    public boolean onTouchEvent(MotionEvent event) {
-      switch (event.getAction()) {
-         case MotionEvent.ACTION_DOWN:
+      switch (event.getActionMasked()) {
+        /* case MotionEvent.ACTION_DOWN:
          case MotionEvent.ACTION_MOVE:
             mCurX = event.getX();
             mCurY = event.getY();
@@ -109,10 +127,89 @@ public class BiggerView2 extends View {
             isDown = false;
             if (callback != null) {
                callback.onActionUp(x,y);
+            }*/
+         case MotionEvent.ACTION_DOWN:
+            if (MotionEvent.ACTION_DOWN == event.getAction()) {//按下
+               count++;
+               if (1 == count) {
+                  firstClick = System.currentTimeMillis();//记录第一次点击时间
+               } else if (2 == count) {
+                  secondClick = System.currentTimeMillis();//记录第二次点击时间
+                  if (secondClick - firstClick < totalTime) {//判断二次点击时间间隔是否在设定的间隔时间之内
+                     count = 0;
+                     firstClick = 0;
+                     scale = 1;
+                     translationX = 0;
+                     translationY = 0;
+                     setScaleX(scale);
+                     setScaleY(scale);
+                     setTranslationX(translationX);
+                     setTranslationY(translationY);
+                  } else {
+                     firstClick = secondClick;
+                     count = 1;
+                  }
+                  secondClick = 0;
+               }
             }
+            break;
+
+         case MotionEvent.ACTION_POINTER_DOWN:
+               if (event.getPointerCount() == 2) {
+                  oldDistance = getDistance(event);
+                  oldCenterX = calculateCenterX(event);
+                  oldCenterY = calculateCenterY(event);
+               }
+            break;
+         case MotionEvent.ACTION_MOVE:
+            if (event.getPointerCount() == 2) {
+               newDistance = getDistance(event);
+               scale += (newDistance - oldDistance) / oldDistance;
+               if (scale > 10) {
+                  scale = 10f;
+               }
+               if (scale < 1) {
+                  scale = 1;
+               }
+               newCenterX = calculateCenterX(event);
+               newCenterY = calculateCenterY(event);
+               // 缩放
+//               imageView.scaleX = scale
+//               imageView.scaleY = scale
+               setScaleX(scale);
+               setScaleY(scale);
+               // 位移
+               translationX += newCenterX - oldCenterX;
+               translationY += newCenterY - oldCenterY;
+//
+               setTranslationX(translationX);
+               setTranslationY(translationY);
+//               imageView.translationX = translationX;
+//               imageView.translationY = translationY;
+            }
+            break;
+
       }
       invalidate();//记得刷新
       return true;
+   }
+
+   private float calculateCenterX(MotionEvent motionEvent) {
+      float x1 = motionEvent.getX(0);
+      float x2 = motionEvent.getX(1);
+      return (x1 + x2) / 2;
+   }
+
+   private float calculateCenterY(MotionEvent motionEvent) {
+      float y1 = motionEvent.getY(0);
+      float y2 = motionEvent.getY(1);
+      return (y1 + y2) / 2;
+   }
+
+   private float getDistance(MotionEvent event) {
+      float dx = event.getX(0) - event.getX(1);
+      float dy = event.getY(0) - event.getY(1);
+      return (float) Math.sqrt(dx * dx + dy * dy);
    }
 
    private BiggerView.Callback callback;
